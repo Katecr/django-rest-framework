@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.users.api.serializers import User
-from apps.users.api.serializers import UserSerializer
+from apps.users.api.serializers import UserSerializer, TestUserSerializer
 
 #Decorador @APIVIEW
 from rest_framework.decorators import api_view
@@ -23,6 +23,19 @@ def user_api_view(request):
         #queryset
         users = User.objects.all()
         users_serializer = UserSerializer(users, many = True)
+
+        test_data = {
+            'name': 'test',
+            'email': 'test@example.com'
+        }
+
+        test_user = TestUserSerializer(data = test_data, context = test_data)
+
+        if test_user.is_valid():
+            print('paso validaciones')
+        else:
+            print(test_user.errors)
+        
         return Response(users_serializer.data, status= status.HTTP_200_OK)
     #create
     elif request.method == 'POST':

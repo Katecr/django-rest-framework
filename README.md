@@ -210,3 +210,83 @@ def user_detail_view(request, pk =None):
     else:
         return Response({'message':'user not found'}, status= status.HTTP_400_BAD_REQUEST)
 ```
+
+---
+## Serializer
+---
+
+Se pueden utilizar también sin modelos definidos
+
+1. Ejemplo de serializer sin modelo creación en el archivo serializers.py
+
+```python
+
+from rest_framework import serializers
+
+
+class TestUserSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=200)
+    email = serializers.EmailField()
+```
+
+2. Forma de utilizarlo en api.py
+
+```python
+
+from apps.users.api.serializers import TestUserSerializer
+
+
+@api_view(['GET','POST'])
+def user_api_view(request):
+    #list
+    if request.method == 'GET':
+        #queryset
+        users = User.objects.all()
+        users_serializer = UserSerializer(users, many = True)
+
+        test_data = {
+            'name': 'test',
+            'email': 'test@example.com'
+        }
+
+        test_user = TestUserSerializer(data = test_data)
+
+        if test_user.is_valid():
+            print('paso validaciones')
+        
+        return Response(users_serializer.data, status= status.HTTP_200_OK)
+```
+
+---
+## Validaciones del Serializer
+---
+
+```python
+
+from rest_framework import serializers
+
+
+class TestUserSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=200)
+    email = serializers.EmailField()
+
+    def validate_name(self, value):
+        # custom validation
+        if 'test2' in value:
+            raise serializers.ValidationError('Error, no puede existir un usuario con ese nombre')
+
+        print(self.context)
+        return value
+
+    def validate_email(self, value):
+        # custom validation
+        if value == '':
+            raise serializers.ValidationError('Tiene que indicar un correo')
+
+        if self.context['name'] in value:
+            raise serializers.ValidationError('El email no puede contener el nombre')
+        return value
+
+    def validate(self, data):
+        return data
+```
