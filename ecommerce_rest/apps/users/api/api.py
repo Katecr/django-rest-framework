@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.users.api.serializers import User
-from apps.users.api.serializers import UserSerializer, TestUserSerializer
+from apps.users.api.serializers import UserSerializer, UserListSerializer
 
 #Decorador @APIVIEW
 from rest_framework.decorators import api_view
@@ -21,22 +21,10 @@ def user_api_view(request):
     #list
     if request.method == 'GET':
         #queryset
-        users = User.objects.all()
-        users_serializer = UserSerializer(users, many = True)
+        users = User.objects.all().values('id','username','password','email')
+        users_serializer = UserListSerializer(users, many = True)
 
-        test_data = {
-            'name': 'test',
-            'email': 'test@example.com'
-        }
-
-        test_user = TestUserSerializer(data = test_data, context = test_data)
-
-        if test_user.is_valid():
-            print('paso validaciones')
-        else:
-            print(test_user.errors)
-        
-        return Response(users_serializer.data, status= status.HTTP_200_OK)
+        return Response(users_serializer.data, status=status.HTTP_200_OK)
     #create
     elif request.method == 'POST':
         user_serializer = UserSerializer(data = request.data)
@@ -53,11 +41,13 @@ def user_detail_view(request, pk =None):
     user = User.objects.filter(id=pk).first()
     #validation
     if user:
+        #retrieve
         if request.method == 'GET':
             if pk is not None:
                 user_serializer = UserSerializer(user)
                 return Response(user_serializer.data, status= status.HTTP_200_OK)
-        # update    
+        # update 
+        # se le manda el user a reemplezar y la data nueva
         elif request.method == 'PUT':
             user_serializer = UserSerializer(user, data = request.data)
             if user_serializer.is_valid():

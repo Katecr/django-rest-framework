@@ -1,5 +1,22 @@
 # Django Rest Framework
 
+<div style="margin-bottom:50px;"></div>
+
+# Tabla de contenido
+1. [Instalación inicial](#instalación-inicial)
+2. [Configuración inicial de proyecto](#configuración-inicial-de-proyecto)
+3. [SERIALIZER y APIVIEW de usuario](#serializer-y-apiview-de-usuario)
+4. [Estados HTTP](#estados-http)
+5. [Serializer](#serializer)
+6. [Validaciones del Serializer](#validaciones-del-serializer)
+    - [Método create en un Serializer](#método-create-en-un-serializer)
+    - [Método update en un Serializer](#método-update-en-un-serializer)
+    - [Método SAVE en un Serializer](#método-save-en-un-serializer)
+7. [To representation en un Serializer](#to-representation-en-un-serializer)
+8. [Encriptar contraseña en un Serializer](#encriptar-contraseña-en-un-serializer)
+
+<div style="margin-bottom:50px;"></div>   
+
 ---
 ## Instalación inicial
 ---
@@ -40,6 +57,8 @@ django-admin startproject nombre_proyecto
 ```
 
 7. Dirigirnos a la carpeta del proyecto creada en el punto 6
+
+<div style="margin-bottom:50px;"></div>  
 
 ---
 
@@ -100,11 +119,14 @@ py manage.py runserver
 py manage.py runserver 3030
 ```
 
+
+<div style="margin-bottom:50px;"></div>  
+
 ---
 ## SERIALIZER y APIVIEW de usuario
 ---
 
-* **serializer**: es aquel que toma la estructura de un modelo para convertir su estrcutura en un formato json
+* **serializer**: es aquel que toma la estructura de un modelo para convertir su estructura en un formato json
 
 > a continuación es una manera de realizarlo, no es una verdad absoluta.
 
@@ -173,6 +195,8 @@ def user_detail_view(request, pk =None):
         return Response('eliminado')
 ```
 
+<div style="margin-bottom:50px;"></div>  
+
 ---
 ## Estados HTTP
 ---
@@ -211,6 +235,8 @@ def user_detail_view(request, pk =None):
         return Response({'message':'user not found'}, status= status.HTTP_400_BAD_REQUEST)
 ```
 
+<div style="margin-bottom:50px;"></div>  
+
 ---
 ## Serializer
 ---
@@ -242,7 +268,7 @@ def user_api_view(request):
     if request.method == 'GET':
         #queryset
         users = User.objects.all()
-        users_serializer = UserSerializer(users, many = True)
+        users_serializer = UserSerializer(users, many = True) #many= que son muchos o varios valores
 
         test_data = {
             'name': 'test',
@@ -257,8 +283,11 @@ def user_api_view(request):
         return Response(users_serializer.data, status= status.HTTP_200_OK)
 ```
 
+<div style="margin-bottom:50px;"></div> 
+
 ---
 ## Validaciones del Serializer
+    
 ---
 
 ```python
@@ -289,4 +318,146 @@ class TestUserSerializer(serializers.Serializer):
 
     def validate(self, data):
         return data
+```
+
+<div style="margin-bottom:50px;"></div> 
+
+---
+## Método create en un Serializer
+---
+
+cuando llamamos .save() pasa por un metodo intermedio llamado create()
+
+recibe como parametros:
+
+**self** 
+
+**validated_data** = es la información valida que acaba de recibir el serializador
+
+``` python
+    def create(self, validated_data):
+        return User.objects.create(**validated_data)
+```
+
+<div style="margin-bottom:50px;"></div> 
+
+---
+## Método update en un Serializer
+---
+
+cuando llamamos .save() en un función de actualizar o PUT, no pasa por create() sino por la función update()
+
+recibe como parametros:
+
+**self** 
+
+**instance** = instancia u objecto al cual se esta haciendo referencia
+
+**validated_data** = es la información valida que acaba de recibir el serializador
+
+``` python
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name',instance.name)
+        instance.email = validated_data.get('email',instance.email)
+        instance.save()
+        return instance
+```
+
+
+> Las validaciones del serializador se ejecutan tanto para crear como para actualizar, si se desean diferentes, deben escribirse en su propio método.
+
+<div style="margin-bottom:50px;"></div>
+
+---
+## Método SAVE en un Serializer
+---
+
+El método save es el encargado de buscar el create o update, pero si este ese sobreescribe, ya solo hace lo que se le indique.
+
+> Un buen uso de sobreescribirlo es cuando no queramos guardar algo en la base de datos. Como por ejemplo un formaulario, o un envio de correo.
+
+``` python
+    def save(self):
+        pass
+```
+
+También el modelo tiene un metodo save(), es el utilizado en la logica del create y del update, si se desea sobreescribir se debe crear en el models.py
+
+``` python
+    def save(self,*args,**kwargs):
+        pass
+```
+
+> Tienen el mismo nombre pero dependiendo de quien los llama se ejecutan.
+
+
+<div style="margin-bottom:50px;"></div>
+
+---
+## To representation en un Serializer
+---
+
+Dentro de los serializadores se encuentra una Función llamada **to_representation()** utilizamos esta función cuando queremos devolver un diccionario con campos especifivos no todos los del modelo.
+
+> Esta función llama a la automatización del modelo en el campo filds, que va recorriendo los campos convirtiendoles en diccionario (clave - valor)
+
+1. Se debe modificar la consulta del modelo especificando los campos ejemplo:
+``` python
+#queryset
+users=User.objects.all().values('id','username','password','email')
+```
+
+2. En el archivo serializer.py, se crea la función to_representation() que recibe dos parametros self y la instancia iterada en el momento.
+``` python
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+
+    #asignar los items que se desean
+    def to_representation(self,instance):
+        return {
+            'id': instance['id'],
+            'username': instance['username'],
+            'password': instance['password'],
+            'email': instance['email']
+        }
+```
+
+> Esta función se utiliza en el GET, para mostrar solo cierta información, no influye en el create, update o delete. 
+
+<div style="margin-bottom:50px;"></div>   
+
+---
+## Encriptar contraseña en un Serializer
+---
+
+Para encriptar la contraseña es necesario sobreescribir el método create y update en el serializador.
+
+1. Sobreescribir la función create()
+``` python
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+
+    def create(self, validated_data):
+       user = User(**validated_data) # tengo una instancia con la info enviada
+       user.set_password(validated_data['password'])
+       user.save()
+       return user
+```
+
+2. Sobreescribir la función update()
+``` python
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+
+    def update(self,instance, validated_data):
+        update_user = super().update(instance,validated_data) 
+        update_user.set_password(validated_data['password'])
+        update_user.save()
+        return update_user
 ```
