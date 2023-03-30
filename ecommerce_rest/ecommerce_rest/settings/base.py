@@ -36,11 +36,14 @@ BASE_APPS = [
 ]
 
 LOCAL_APPS = [
+    'apps.base',
     'apps.users',
+    'apps.products',
 ]
 
 THIRD_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
     'simple_history',
 ]
 
@@ -117,3 +120,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Funcionar con el modelo usuario
 AUTH_USER_MODEL = 'users.User'
+
+#Token expiration in seconds
+TOKEN_EXPIRED_AFTER_SECONDS = 900 #15 minutos
