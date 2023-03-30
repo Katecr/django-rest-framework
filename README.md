@@ -1385,3 +1385,54 @@ class ProductViewSet(Authentication, ModelViewSet):
 ---
 ## Configurar CORS en la API
 ---
+Cuando estamos comunicando una API con cualquier cliente FRONTEND, tenemos que configurar los CORS o CORS HEADERS
+
+**CORS:** políticas que añaden configuraciones al header de la petición  
+
+Para Django existe un paquete que se llama django-cors-headers
+
+> **DJANGO-CORS-HEADERS:** https://github.com/adamchainz/django-...
+
+
+1. Se instala la libreria
+``` python
+python -m pip install django-cors-headers
+``` 
+
+2. Añadir la aplicación a base.py 
+``` python
+THIRD_APPS = [
+    ...,
+    "corsheaders",
+]
+``` 
+
+3. Añadir el middleware, deben ser colocados lo mas alto posible
+```python
+MIDDLEWARE = [
+    ...,
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    ...,
+]
+``` 
+
+4. Agregar una configuración extra en base.py
+```python
+CORS_ALLOWED_ORIGINS = [
+    "https://example.com",
+    "https://sub.example.com",
+    "http://localhost:8080",
+    "http://127.0.0.1:9000",
+]
+```
+
+5. Agregar otra variable con lo mismo, porque en ocasiones presenta error chrome y android
+```python
+CORS_ORIGIN_WHITELIST = [
+    "https://example.com",
+    "https://sub.example.com",
+    "http://localhost:8080",
+    "http://127.0.0.1:9000",
+]
+```

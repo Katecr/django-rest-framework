@@ -45,6 +45,7 @@ THIRD_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'simple_history',
+    "corsheaders",
 ]
 
 INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
@@ -53,6 +54,7 @@ INSTALLED_APPS = BASE_APPS + LOCAL_APPS + THIRD_APPS
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -123,3 +125,12 @@ AUTH_USER_MODEL = 'users.User'
 
 #Token expiration in seconds
 TOKEN_EXPIRED_AFTER_SECONDS = 900 #15 minutos
+
+#Configurated cors
+CORS_ALLOWED_ORIGINS = [    
+    "http://localhost:8080"
+]
+
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:8080"
+]
