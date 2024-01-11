@@ -3,6 +3,7 @@
 <div style="margin-bottom:50px;"></div>
 
 # Tabla de contenido
+[Consideraciones importantes](#consideraciones-importantes)
 1. [Instalación inicial](#instalación-inicial)
 2. [Configuración inicial de proyecto](#configuración-inicial-de-proyecto)
 3. [SERIALIZER y APIVIEW de usuario](#serializer-y-apiview-de-usuario)
@@ -41,6 +42,38 @@
 19. [Configurar CORS en la API](#configurar-cors-en-la-api)
 
 <div style="margin-bottom:50px;"></div>   
+
+---
+## Consideraciones importantes
+---
+
+**request**: el request ya modifica su contenido para ser accedido
+- ***request.POST***: -> request.data(incluye archivos e imágenes enviados)
+- ***request.GET***: -> request.query_params
+
+<div style="margin:20px 0;"></div>
+
+Se tiene nuevas variables en el request
+- ***accepted_rederer***: -> JSONRenderer()
+- ***accepted_media_type***: -> application/json
+
+<div style="margin:20px 0;"></div>
+
+**response**: el response viene con la siguiente estructura
+```python
+response(data, status=None, template_name=None, headers=None, content_type=None)
+```
+- **data:** son los datos ya SERIALIZADOS que se envían como respuesta.
+- **status:** código HTTP de estado para la respuesta, por defecto retorna código HTTP_200_OK.
+- **template_name:** plantilla a utilizar si es que se utiliza HTMLRenderer como medio de renderizado.
+-  **content_type:** tipo de contenido de la respuesta, este tipo es definido automáticamente cuando se trata la petición pero hay casos donde se debe especificar manualmente.
+
+<div style="margin:20px 0;"></div>
+
+**ruta**: ruta comparativa de django vs django rest_framework
+
+- ***DJANGO*** Modelo -> Form -> Vista -> Ruta
+- ***DJANGO REST FRAMEWORK*** Modelo -> Serializador -> Vista -> Router
 
 ---
 ## Instalación inicial
@@ -398,7 +431,7 @@ recibe como parametros:
 
 El método save es el encargado de buscar el create o update, pero si este ese sobreescribe, ya solo hace lo que se le indique.
 
-> Un buen uso de sobreescribirlo es cuando no queramos guardar algo en la base de datos. Como por ejemplo un formaulario, o un envio de correo.
+> Un buen uso de sobreescribirlo es cuando no queramos guardar algo en la base de datos. Como por ejemplo un formulario, o un envio de correo.
 
 ``` python
     def save(self):
